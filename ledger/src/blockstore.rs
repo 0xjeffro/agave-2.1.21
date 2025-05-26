@@ -67,7 +67,7 @@ use {
         cmp,
         collections::{
             btree_map::Entry as BTreeMapEntry, hash_map::Entry as HashMapEntry, BTreeMap, BTreeSet,
-            HashMap, HashSet, VecDeque,
+            VecDeque,
         },
         convert::TryInto,
         fmt::Write,
@@ -86,6 +86,8 @@ use {
     thiserror::Error,
     trees::{Tree, TreeWalk},
 };
+use ahash::AHashMap as HashMap;
+use ahash::AHashSet as HashSet;
 pub mod blockstore_purge;
 #[cfg(test)]
 use static_assertions::const_assert_eq;

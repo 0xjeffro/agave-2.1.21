@@ -6996,6 +6996,7 @@ dependencies = [
 name = "solana-ledger"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "assert_matches",
  "bincode",
  "bitflags 2.6.0",
