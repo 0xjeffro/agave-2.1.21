@@ -8,10 +8,13 @@ use {
         hash::Hash,
     },
     std::{
-        collections::{hash_map::Entry, HashMap, HashSet},
+        collections::{hash_map::Entry, HashSet},
         sync::{Arc, Mutex},
     },
 };
+
+use ahash::AHashMap as HashMap;
+// use ahash::AHashSet as HashSet;
 
 pub const MAX_CACHE_ENTRIES: usize = MAX_RECENT_BLOCKHASHES;
 const CACHED_KEY_SIZE: usize = 20;
