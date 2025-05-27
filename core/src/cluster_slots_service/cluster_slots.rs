@@ -13,7 +13,6 @@ use {
         collections::{BTreeMap, HashMap},
         sync::{Arc, Mutex, RwLock},
     },
-    ahash::AHashMap,
 };
 
 // Limit the size of cluster-slots map in case
@@ -219,7 +218,7 @@ impl ClusterSlots {
 #[cfg(test)]
 mod tests {
     use {super::*, solana_runtime::epoch_stakes::NodeVoteAccounts};
-
+    use ahash::AHashMap;
     #[test]
     fn test_default() {
         let cs = ClusterSlots::default();

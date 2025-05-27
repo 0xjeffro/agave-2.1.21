@@ -52,7 +52,6 @@ use {
         thread::{self, sleep, Builder, JoinHandle},
         time::{Duration, Instant},
     },
-    ahash::AHashMap,
     tokio::sync::mpsc::Sender as AsyncSender,
 };
 
@@ -1082,6 +1081,7 @@ mod test {
         },
         solana_streamer::socket::SocketAddrSpace,
         std::collections::HashSet,
+        ahash::AHashMap,
     };
 
     fn new_test_cluster_info() -> ClusterInfo {
