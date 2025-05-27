@@ -10481,7 +10481,7 @@ fn test_an_empty_instruction_without_program() {
 #[test]
 fn test_transaction_log_collector_get_logs_for_address() {
     let address = Pubkey::new_unique();
-    let mut mentioned_address_map = HashMap::new();
+    let mut mentioned_address_map = AHashMap::new();
     mentioned_address_map.insert(address, vec![0]);
     let transaction_log_collector = TransactionLogCollector {
         mentioned_address_map,

@@ -52,6 +52,7 @@ use {
         thread::{self, sleep, Builder, JoinHandle},
         time::{Duration, Instant},
     },
+    ahash::AHashMap,
     tokio::sync::mpsc::Sender as AsyncSender,
 };
 
@@ -1155,7 +1156,7 @@ mod test {
         assert_eq!(
             repair_weight.get_best_weighted_repairs(
                 &blockstore,
-                &HashMap::new(),
+                &AHashMap::new(),
                 &EpochSchedule::default(),
                 MAX_ORPHANS,
                 MAX_REPAIR_LENGTH,
@@ -1187,7 +1188,7 @@ mod test {
         assert_eq!(
             repair_weight.get_best_weighted_repairs(
                 &blockstore,
-                &HashMap::new(),
+                &AHashMap::new(),
                 &EpochSchedule::default(),
                 MAX_ORPHANS,
                 MAX_REPAIR_LENGTH,
@@ -1244,7 +1245,7 @@ mod test {
         assert_eq!(
             repair_weight.get_best_weighted_repairs(
                 &blockstore,
-                &HashMap::new(),
+                &AHashMap::new(),
                 &EpochSchedule::default(),
                 MAX_ORPHANS,
                 MAX_REPAIR_LENGTH,
@@ -1259,7 +1260,7 @@ mod test {
         assert_eq!(
             repair_weight.get_best_weighted_repairs(
                 &blockstore,
-                &HashMap::new(),
+                &AHashMap::new(),
                 &EpochSchedule::default(),
                 MAX_ORPHANS,
                 expected.len() - 2,
@@ -1302,7 +1303,7 @@ mod test {
         assert_eq!(
             repair_weight.get_best_weighted_repairs(
                 &blockstore,
-                &HashMap::new(),
+                &AHashMap::new(),
                 &EpochSchedule::default(),
                 MAX_ORPHANS,
                 MAX_REPAIR_LENGTH,

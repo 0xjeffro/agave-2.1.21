@@ -400,7 +400,7 @@ pub struct TransactionLogCollector {
 
     // For each `mentioned_addresses`, maintain a list of indices into `logs` to easily
     // locate the logs from transactions that included the mentioned addresses.
-    pub mentioned_address_map: HashMap<Pubkey, Vec<usize>>,
+    pub mentioned_address_map: AHashMap<Pubkey, Vec<usize>>,
 }
 
 impl TransactionLogCollector {
@@ -457,7 +457,7 @@ pub struct BankFieldsToDeserialize {
     pub(crate) epoch_schedule: EpochSchedule,
     pub(crate) inflation: Inflation,
     pub(crate) stakes: Stakes<Delegation>,
-    pub(crate) epoch_stakes: HashMap<Epoch, EpochStakes>,
+    pub(crate) epoch_stakes: AHashMap<Epoch, EpochStakes>,
     pub(crate) is_delta: bool,
     pub(crate) accounts_data_len: u64,
     pub(crate) incremental_snapshot_persistence: Option<BankIncrementalSnapshotPersistence>,
@@ -501,10 +501,10 @@ pub struct BankFieldsToSerialize {
     pub epoch_schedule: EpochSchedule,
     pub inflation: Inflation,
     pub stakes: StakesEnum,
-    pub epoch_stakes: HashMap<Epoch, EpochStakes>,
+    pub epoch_stakes: AHashMap<Epoch, EpochStakes>,
     pub is_delta: bool,
     pub accounts_data_len: u64,
-    pub versioned_epoch_stakes: HashMap<u64, VersionedEpochStakes>,
+    pub versioned_epoch_stakes: AHashMap<u64, VersionedEpochStakes>,
 }
 
 // Can't derive PartialEq because RwLock doesn't implement PartialEq
@@ -659,10 +659,10 @@ impl BankFieldsToSerialize {
             epoch_schedule: EpochSchedule::default(),
             inflation: Inflation::default(),
             stakes: Stakes::<Delegation>::default().into(),
-            epoch_stakes: HashMap::default(),
+            epoch_stakes: AHashMap::default(),
             is_delta: bool::default(),
             accounts_data_len: u64::default(),
-            versioned_epoch_stakes: HashMap::default(),
+            versioned_epoch_stakes: AHashMap::default(),
         }
     }
 }
@@ -844,7 +844,7 @@ pub struct Bank {
 
     /// staked nodes on epoch boundaries, saved off when a bank.slot() is at
     ///   a leader schedule calculation boundary
-    epoch_stakes: HashMap<Epoch, EpochStakes>,
+    epoch_stakes: AHashMap<Epoch, EpochStakes>,
 
     /// A boolean reflecting whether any entries were recorded into the PoH
     /// stream for the slot == self.slot
@@ -1034,7 +1034,7 @@ impl Bank {
             epoch_schedule: EpochSchedule::default(),
             inflation: Arc::<RwLock<Inflation>>::default(),
             stakes_cache: StakesCache::default(),
-            epoch_stakes: HashMap::<Epoch, EpochStakes>::default(),
+            epoch_stakes: AHashMap::<Epoch, EpochStakes>::default(),
             is_delta: AtomicBool::default(),
             rewards: RwLock::<Vec<(Pubkey, RewardInfo)>>::default(),
             cluster_type: Option::<ClusterType>::default(),
@@ -6327,7 +6327,7 @@ impl Bank {
         self.epoch_stakes.get(&epoch)
     }
 
-    pub fn epoch_stakes_map(&self) -> &HashMap<Epoch, EpochStakes> {
+    pub fn epoch_stakes_map(&self) -> &AHashMap<Epoch, EpochStakes> {
         &self.epoch_stakes
     }
 

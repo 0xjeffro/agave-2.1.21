@@ -21,7 +21,7 @@ use {
     },
     solana_sdk::clock::Slot,
     std::{
-        collections::HashMap,
+        //collections::HashMap,
         fs::File,
         io::{BufReader, Error as IoError},
         path::PathBuf,
@@ -32,6 +32,7 @@ use {
         },
         time::Instant,
     },
+    ahash::AHashMap as HashMap,
 };
 
 lazy_static! {

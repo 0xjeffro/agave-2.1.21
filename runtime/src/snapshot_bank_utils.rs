@@ -42,11 +42,12 @@ use {
         slot_history::{Check, SlotHistory},
     },
     std::{
-        collections::{HashMap, HashSet},
+        collections::{HashSet},
         ops::RangeInclusive,
         path::{Path, PathBuf},
         sync::{atomic::AtomicBool, Arc},
     },
+    ahash::AHashMap as HashMap,
     tempfile::TempDir,
 };
 

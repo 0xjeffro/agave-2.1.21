@@ -45,7 +45,7 @@ use {
     },
     std::{
         cell::RefCell,
-        collections::{HashMap, HashSet},
+        collections::{HashSet},
         io::{self, BufReader, BufWriter, Read, Write},
         path::{Path, PathBuf},
         result::Result,
@@ -57,6 +57,7 @@ use {
     },
     storage::SerializableStorage,
     types::SerdeAccountsLtHash,
+    ahash::AHashMap as HashMap,
 };
 
 mod storage;

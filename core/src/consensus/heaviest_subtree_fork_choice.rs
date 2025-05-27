@@ -18,11 +18,12 @@ use {
         borrow::Borrow,
         cmp::Ordering,
         collections::{
-            btree_set::Iter, hash_map::Entry, BTreeMap, BTreeSet, HashMap, HashSet, VecDeque,
+            btree_set::Iter, hash_map::Entry, BTreeMap, HashMap, BTreeSet, HashSet, VecDeque,
         },
         sync::{Arc, RwLock},
         time::Instant,
     },
+    ahash::AHashMap,
 };
 
 pub type ForkWeight = u64;
@@ -339,7 +340,7 @@ impl HeaviestSubtreeForkChoice {
         &'a mut self,
         // newly updated votes on a fork
         pubkey_votes: impl Iterator<Item = impl Borrow<(Pubkey, SlotHashKey)> + 'b>,
-        epoch_stakes: &HashMap<Epoch, EpochStakes>,
+        epoch_stakes: &AHashMap<Epoch, EpochStakes>,
         epoch_schedule: &EpochSchedule,
     ) -> SlotHashKey {
         // Generate the set of updates
@@ -648,7 +649,7 @@ impl HeaviestSubtreeForkChoice {
         &mut self,
         other: HeaviestSubtreeForkChoice,
         merge_leaf: &SlotHashKey,
-        epoch_stakes: &HashMap<Epoch, EpochStakes>,
+        epoch_stakes: &AHashMap<Epoch, EpochStakes>,
         epoch_schedule: &EpochSchedule,
     ) {
         assert!(self.fork_infos.contains_key(merge_leaf));
@@ -967,12 +968,12 @@ impl HeaviestSubtreeForkChoice {
     fn generate_update_operations<'a, 'b>(
         &'a mut self,
         pubkey_votes: impl Iterator<Item = impl Borrow<(Pubkey, SlotHashKey)> + 'b>,
-        epoch_stakes: &HashMap<Epoch, EpochStakes>,
+        epoch_stakes: &AHashMap<Epoch, EpochStakes>,
         epoch_schedule: &EpochSchedule,
     ) -> UpdateOperations {
         let mut update_operations: BTreeMap<(SlotHashKey, UpdateLabel), UpdateOperation> =
             BTreeMap::new();
-        let mut observed_pubkeys: HashMap<Pubkey, Slot> = HashMap::new();
+        let mut observed_pubkeys: AHashMap<Pubkey, Slot> = AHashMap::new();
         // Sort the `pubkey_votes` in a BTreeMap by the slot voted
         for pubkey_vote in pubkey_votes {
             let (pubkey, new_vote_slot_hash) = pubkey_vote.borrow();

@@ -13,6 +13,7 @@ use {
         collections::{BTreeMap, HashMap},
         sync::{Arc, Mutex, RwLock},
     },
+    ahash::AHashMap,
 };
 
 // Limit the size of cluster-slots map in case
@@ -304,7 +305,7 @@ mod tests {
             .unwrap()
             .insert(0, Arc::new(RwLock::new(map)));
         //make sure default weights are used as well
-        let validator_stakes: HashMap<_, _> = vec![(
+        let validator_stakes: AHashMap<_, _> = vec![(
             k1,
             NodeVoteAccounts {
                 total_stake: u64::MAX / 2,
@@ -340,7 +341,7 @@ mod tests {
             .is_empty());
 
         // Give second validator max stake
-        let validator_stakes: HashMap<_, _> = vec![(
+        let validator_stakes: AHashMap<_, _> = vec![(
             *contact_infos[1].pubkey(),
             NodeVoteAccounts {
                 total_stake: u64::MAX / 2,
