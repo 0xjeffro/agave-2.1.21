@@ -10,6 +10,7 @@ use {
         sync::atomic::{AtomicU64, Ordering},
         time::Instant,
     },
+    ahash::AHashMap,
 };
 
 #[derive(Default)]
@@ -185,7 +186,7 @@ pub struct GossipStats {
 pub(crate) fn submit_gossip_stats(
     stats: &GossipStats,
     gossip: &CrdsGossip,
-    stakes: &HashMap<Pubkey, u64>,
+    stakes: &AHashMap<Pubkey, u64>,
 ) {
     let (crds_stats, table_size, num_nodes, num_pubkeys, purged_values_size, failed_inserts_size) = {
         let gossip_crds = gossip.crds.read().unwrap();

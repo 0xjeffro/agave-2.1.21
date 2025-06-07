@@ -25,7 +25,6 @@ use {
         ConnectionWorkersScheduler, ConnectionWorkersSchedulerError,
     },
     std::{
-        collections::HashMap,
         net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
         num::Saturating,
         str::FromStr,
@@ -41,6 +40,7 @@ use {
         time::{sleep, Instant},
     },
     tokio_util::sync::CancellationToken,
+    ahash::AHashMap,
 };
 
 fn test_config(stake_identity: Option<Keypair>) -> ConnectionWorkersSchedulerConfig {
@@ -404,8 +404,8 @@ async fn test_connection_pruned_and_reopened() {
 #[tokio::test]
 async fn test_staked_connection() {
     let stake_identity = Keypair::new();
-    let stakes = HashMap::from([(stake_identity.pubkey(), 100_000)]);
-    let staked_nodes = StakedNodes::new(Arc::new(stakes), HashMap::<Pubkey, u64>::default());
+    let stakes = AHashMap::from([(stake_identity.pubkey(), 100_000)]);
+    let staked_nodes = StakedNodes::new(Arc::new(stakes), AHashMap::<Pubkey, u64>::default());
 
     let SpawnTestServerResult {
         join_handle: server_handle,

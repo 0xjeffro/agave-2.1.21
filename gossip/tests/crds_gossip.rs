@@ -31,6 +31,7 @@ use {
         sync::{Arc, Mutex},
         time::{Duration, Instant},
     },
+    ahash::AHashMap,
 };
 
 #[derive(Clone)]
@@ -88,8 +89,8 @@ impl Deref for Network {
     }
 }
 
-fn stakes(network: &Network) -> HashMap<Pubkey, u64> {
-    let mut stakes = HashMap::new();
+fn stakes(network: &Network) -> AHashMap<Pubkey, u64> {
+    let mut stakes = AHashMap::new();
     for (key, Node { stake, .. }) in network.iter() {
         stakes.insert(*key, *stake);
     }
@@ -293,7 +294,7 @@ fn network_simulator(thread_pool: &ThreadPool, network: &mut Network, max_conver
         node.gossip.refresh_push_active_set(
             &node.keypair,
             0,               // shred version
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             None,            // gossip validators
             &node.ping_cache,
             &mut Vec::new(), // pings
@@ -459,7 +460,7 @@ fn network_run_push(
                 node.gossip.refresh_push_active_set(
                     &node.keypair,
                     0,               // shred version
-                    &HashMap::new(), // stakes
+                    &AHashMap::new(), // stakes
                     None,            // gossip validators
                     &node.ping_cache,
                     &mut Vec::new(), // pings
@@ -529,7 +530,7 @@ fn network_run_pull(
                             0, // shred version.
                             now,
                             None,
-                            &HashMap::new(),
+                            &AHashMap::new(),
                             cluster_info::MAX_BLOOM_SIZE,
                             from.ping_cache.deref(),
                             &mut pings,
@@ -770,14 +771,14 @@ fn test_prune_errors() {
     crds_gossip.refresh_push_active_set(
         &keypair,
         0,               // shred version
-        &HashMap::new(), // stakes
+        &AHashMap::new(), // stakes
         None,            // gossip validators
         &ping_cache,
         &mut Vec::new(), // pings
         &SocketAddrSpace::Unspecified,
     );
     let now = timestamp();
-    let stakes = HashMap::<Pubkey, u64>::default();
+    let stakes = AHashMap::<Pubkey, u64>::default();
     //incorrect dest
     let mut res = crds_gossip.process_prune_msg(
         &id,                                      // self_pubkey

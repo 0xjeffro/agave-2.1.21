@@ -113,6 +113,7 @@ use {
     },
     tempfile::TempDir,
 };
+use ahash::AHashMap;
 
 // when the accounts write cache exceeds this many bytes, we will flush it
 // this can be specified on the command line, too (--accounts-db-cache-limit-mb)
@@ -7388,7 +7389,7 @@ impl AccountsDb {
     /// (aka dirty pubkeys) and add them to `self.uncleaned_pubkeys` for future cleaning.
     #[cfg(feature = "dev-context-only-utils")]
     pub fn calculate_accounts_delta_hash(&self, slot: Slot) -> AccountsDeltaHash {
-        self.calculate_accounts_delta_hash_internal(slot, None, HashMap::default())
+        self.calculate_accounts_delta_hash_internal(slot, None, AHashMap::default())
     }
 
     /// Calculate accounts delta hash for `slot`
@@ -7399,7 +7400,7 @@ impl AccountsDb {
         &self,
         slot: Slot,
         ignore: Option<Pubkey>,
-        mut skipped_rewrites: HashMap<Pubkey, AccountHash>,
+        mut skipped_rewrites: AHashMap<Pubkey, AccountHash>,
     ) -> AccountsDeltaHash {
         let (mut hashes, scan_us, mut accumulate) = self.get_pubkey_hash_for_slot(slot);
         let dirty_keys = hashes.iter().map(|(pubkey, _hash)| *pubkey).collect();

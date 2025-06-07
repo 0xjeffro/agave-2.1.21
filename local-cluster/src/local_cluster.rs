@@ -65,6 +65,7 @@ use {
         sync::{Arc, RwLock},
         time::Instant,
     },
+    ahash::AHashMap,
 };
 
 const DUMMY_SNAPSHOT_CONFIG_PATH_MARKER: &str = "dummy";
@@ -195,7 +196,7 @@ impl LocalCluster {
             let stake = DEFAULT_NODE_STAKE;
 
             for validator_config in config.validator_configs.iter_mut() {
-                let mut overrides = HashMap::new();
+                let mut overrides = AHashMap::new();
                 overrides.insert(client_keypair.pubkey(), stake);
                 validator_config.staked_nodes_overrides = Arc::new(RwLock::new(overrides));
             }
@@ -206,13 +207,13 @@ impl LocalCluster {
             );
 
             let total_stake = config.node_stakes.iter().sum::<u64>();
-            let stakes = HashMap::from([
+            let stakes = AHashMap::from([
                 (client_keypair.pubkey(), stake),
                 (Pubkey::new_unique(), total_stake.saturating_sub(stake)),
             ]);
             let staked_nodes = Arc::new(RwLock::new(StakedNodes::new(
                 Arc::new(stakes),
-                HashMap::<Pubkey, u64>::default(), // overrides
+                AHashMap::<Pubkey, u64>::default(), // overrides
             )));
 
             Arc::new(ConnectionCache::new_with_client_options(

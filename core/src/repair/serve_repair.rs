@@ -51,7 +51,7 @@ use {
     },
     std::{
         cmp::Reverse,
-        collections::{HashMap, HashSet},
+        collections::{HashSet},
         net::{SocketAddr, UdpSocket},
         sync::{
             atomic::{AtomicBool, Ordering},
@@ -61,6 +61,7 @@ use {
         time::{Duration, Instant},
     },
     tokio::sync::mpsc::Sender as AsyncSender,
+    ahash::AHashMap,
 };
 
 /// the number of slots to respond with when responding to `Orphan` requests
@@ -526,7 +527,7 @@ impl ServeRepair {
 
     fn decode_request(
         remote_request: RemoteRequest,
-        epoch_staked_nodes: &Option<Arc<HashMap<Pubkey, u64>>>,
+        epoch_staked_nodes: &Option<Arc<AHashMap<Pubkey, u64>>>,
         whitelist: &HashSet<Pubkey>,
         my_id: &Pubkey,
         socket_addr_space: &SocketAddrSpace,
@@ -598,7 +599,7 @@ impl ServeRepair {
 
     fn decode_requests(
         requests: Vec<RemoteRequest>,
-        epoch_staked_nodes: &Option<Arc<HashMap<Pubkey, u64>>>,
+        epoch_staked_nodes: &Option<Arc<AHashMap<Pubkey, u64>>>,
         whitelist: &HashSet<Pubkey>,
         my_id: &Pubkey,
         socket_addr_space: &SocketAddrSpace,

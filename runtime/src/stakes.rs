@@ -23,6 +23,7 @@ use {
         ops::Add,
         sync::{Arc, RwLock, RwLockReadGuard},
     },
+    ahash::AHashMap,
     thiserror::Error,
 };
 
@@ -236,7 +237,7 @@ impl<T: Clone> Stakes<T> {
         &self.vote_accounts
     }
 
-    pub(crate) fn staked_nodes(&self) -> Arc<HashMap<Pubkey, u64>> {
+    pub(crate) fn staked_nodes(&self) -> Arc<AHashMap<Pubkey, u64>> {
         self.vote_accounts.staked_nodes()
     }
 }
@@ -516,7 +517,7 @@ impl StakesEnum {
         }
     }
 
-    pub(crate) fn staked_nodes(&self) -> Arc<HashMap<Pubkey, u64>> {
+    pub(crate) fn staked_nodes(&self) -> Arc<AHashMap<Pubkey, u64>> {
         match self {
             StakesEnum::Accounts(stakes) => stakes.staked_nodes(),
             StakesEnum::Delegations(stakes) => stakes.staked_nodes(),

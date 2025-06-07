@@ -3,7 +3,6 @@ use {
     solana_sdk::pubkey::Pubkey,
     solana_streamer::streamer::StakedNodes,
     std::{
-        collections::HashMap,
         sync::{
             atomic::{AtomicBool, Ordering},
             Arc, RwLock,
@@ -11,6 +10,7 @@ use {
         thread::{self, Builder, JoinHandle},
         time::Duration,
     },
+    ahash::AHashMap,
 };
 
 const STAKE_REFRESH_CYCLE: Duration = Duration::from_secs(5);
@@ -24,7 +24,7 @@ impl StakedNodesUpdaterService {
         exit: Arc<AtomicBool>,
         bank_forks: Arc<RwLock<BankForks>>,
         staked_nodes: Arc<RwLock<StakedNodes>>,
-        staked_nodes_overrides: Arc<RwLock<HashMap<Pubkey, u64>>>,
+        staked_nodes_overrides: Arc<RwLock<AHashMap<Pubkey, u64>>>,
     ) -> Self {
         let thread_hdl = Builder::new()
             .name("solStakedNodeUd".to_string())

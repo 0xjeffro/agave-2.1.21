@@ -69,6 +69,7 @@ use {
         time::Duration,
     },
     tokio::time::sleep,
+    ahash::AHashMap,
 };
 
 #[derive(Clone)]
@@ -125,7 +126,7 @@ pub struct TestValidatorGenesis {
     pub validator_exit: Arc<RwLock<Exit>>,
     pub start_progress: Arc<RwLock<ValidatorStartProgress>>,
     pub authorized_voter_keypairs: Arc<RwLock<Vec<Arc<Keypair>>>>,
-    pub staked_nodes_overrides: Arc<RwLock<HashMap<Pubkey, u64>>>,
+    pub staked_nodes_overrides: Arc<RwLock<AHashMap<Pubkey, u64>>>,
     pub max_ledger_shreds: Option<u64>,
     pub max_genesis_archive_unpacked_size: Option<u64>,
     pub geyser_plugin_config_files: Option<Vec<PathBuf>>,
@@ -157,7 +158,7 @@ impl Default for TestValidatorGenesis {
             validator_exit: Arc::<RwLock<Exit>>::default(),
             start_progress: Arc::<RwLock<ValidatorStartProgress>>::default(),
             authorized_voter_keypairs: Arc::<RwLock<Vec<Arc<Keypair>>>>::default(),
-            staked_nodes_overrides: Arc::new(RwLock::new(HashMap::new())),
+            staked_nodes_overrides: Arc::new(RwLock::new(AHashMap::new())),
             max_ledger_shreds: Option::<u64>::default(),
             max_genesis_archive_unpacked_size: Option::<u64>::default(),
             geyser_plugin_config_files: Option::<Vec<PathBuf>>::default(),

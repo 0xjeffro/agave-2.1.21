@@ -12,13 +12,14 @@ use {
     },
     std::{
         cmp::Ordering,
-        collections::{hash_map::Entry, HashMap},
+        collections::{hash_map::Entry},
         fmt,
         iter::FromIterator,
         mem::{self, MaybeUninit},
         ptr::addr_of_mut,
         sync::{Arc, OnceLock},
     },
+    ahash::AHashMap,
     thiserror::Error,
 };
 
@@ -41,7 +42,7 @@ struct VoteAccountInner {
     vote_state: VoteState,
 }
 
-pub type VoteAccountsHashMap = HashMap<Pubkey, (/*stake:*/ u64, VoteAccount)>;
+pub type VoteAccountsHashMap = AHashMap<Pubkey, (/*stake:*/ u64, VoteAccount)>;
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VoteAccounts {
@@ -51,7 +52,7 @@ pub struct VoteAccounts {
     #[serde(skip)]
     staked_nodes: OnceLock<
         Arc<
-            HashMap<
+            AHashMap<
                 Pubkey, // VoteAccount.vote_state.node_pubkey.
                 u64,    // Total stake across all vote-accounts.
             >,
@@ -140,7 +141,7 @@ impl VoteAccounts {
         self.vote_accounts.is_empty()
     }
 
-    pub fn staked_nodes(&self) -> Arc<HashMap</*node_pubkey:*/ Pubkey, /*stake:*/ u64>> {
+    pub fn staked_nodes(&self) -> Arc<AHashMap</*node_pubkey:*/ Pubkey, /*stake:*/ u64>> {
         self.staked_nodes
             .get_or_init(|| {
                 Arc::new(
@@ -151,7 +152,9 @@ impl VoteAccounts {
                         .into_grouping_map()
                         .aggregate(|acc, _node_pubkey, stake| {
                             Some(acc.unwrap_or_default() + stake)
-                        }),
+                        })
+                        .into_iter()
+                        .collect::<AHashMap<_, _>>(),
                 )
             })
             .clone()
@@ -262,7 +265,7 @@ impl VoteAccounts {
     }
 
     fn do_add_node_stake(
-        staked_nodes: &mut Arc<HashMap<Pubkey, u64>>,
+        staked_nodes: &mut Arc<AHashMap<Pubkey, u64>>,
         stake: u64,
         node_pubkey: Pubkey,
     ) {
@@ -285,7 +288,7 @@ impl VoteAccounts {
     }
 
     fn do_sub_node_stake(
-        staked_nodes: &mut Arc<HashMap<Pubkey, u64>>,
+        staked_nodes: &mut Arc<AHashMap<Pubkey, u64>>,
         stake: u64,
         node_pubkey: &Pubkey,
     ) {
@@ -428,7 +431,7 @@ impl FromIterator<(Pubkey, (/*stake:*/ u64, VoteAccount))> for VoteAccounts {
     where
         I: IntoIterator<Item = (Pubkey, (u64, VoteAccount))>,
     {
-        Self::from(Arc::new(HashMap::from_iter(iter)))
+        Self::from(Arc::new(AHashMap::from_iter(iter)))
     }
 }
 
@@ -457,7 +460,7 @@ where
         where
             M: MapAccess<'de>,
         {
-            let mut accounts = HashMap::new();
+            let mut accounts = AHashMap::new();
 
             while let Some((pubkey, (stake, account))) =
                 access.next_entry::<Pubkey, (u64, AccountSharedData)>()?
@@ -535,11 +538,11 @@ mod tests {
         })
     }
 
-    fn staked_nodes<'a, I>(vote_accounts: I) -> HashMap<Pubkey, u64>
+    fn staked_nodes<'a, I>(vote_accounts: I) -> AHashMap<Pubkey, u64>
     where
         I: IntoIterator<Item = &'a (Pubkey, (u64, VoteAccount))>,
     {
-        let mut staked_nodes = HashMap::new();
+        let mut staked_nodes = AHashMap::new();
         for (_, (stake, vote_account)) in vote_accounts
             .into_iter()
             .filter(|(_, (stake, _))| *stake != 0)

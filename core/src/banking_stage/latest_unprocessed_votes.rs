@@ -536,6 +536,7 @@ mod tests {
             vote_state::TowerSync, vote_transaction::new_tower_sync_transaction,
         },
         std::{sync::Arc, thread::Builder},
+        ahash::AHashMap,
     };
 
     fn from_slots(
@@ -978,7 +979,7 @@ mod tests {
         assert_eq!(bank.epoch(), 1);
         bank.set_epoch_stakes_for_test(
             bank.epoch().saturating_add(2),
-            EpochStakes::new_for_tests(HashMap::new(), bank.epoch().saturating_add(2)),
+            EpochStakes::new_for_tests(AHashMap::new(), bank.epoch().saturating_add(2)),
         );
         let bank = Arc::new(bank);
         let mut forward_packet_batches_by_accounts =

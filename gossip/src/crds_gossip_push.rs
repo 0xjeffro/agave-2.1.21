@@ -29,7 +29,7 @@ use {
     },
     solana_streamer::socket::SocketAddrSpace,
     std::{
-        collections::{HashMap, HashSet},
+        collections::{HashSet},
         iter::repeat,
         net::SocketAddr,
         ops::{DerefMut, RangeBounds},
@@ -38,6 +38,7 @@ use {
             Mutex, RwLock,
         },
     },
+    ahash::AHashMap
 };
 
 const CRDS_GOSSIP_PUSH_FANOUT: usize = 9;
@@ -92,8 +93,8 @@ impl CrdsGossipPush {
         &self,
         self_pubkey: &Pubkey,
         origins: I, // Unique pubkeys of crds values' owners.
-        stakes: &HashMap<Pubkey, u64>,
-    ) -> HashMap</*gossip peer:*/ Pubkey, /*origins:*/ Vec<Pubkey>>
+        stakes: &AHashMap<Pubkey, u64>,
+    ) -> AHashMap</*gossip peer:*/ Pubkey, /*origins:*/ Vec<Pubkey>>
     where
         I: IntoIterator<Item = Pubkey>,
     {
@@ -112,6 +113,7 @@ impl CrdsGossipPush {
                     .zip(repeat(origin))
             })
             .into_group_map()
+            .into_iter().collect::<AHashMap<_, _>>()
     }
 
     fn wallclock_window(&self, now: u64) -> impl RangeBounds<u64> {
@@ -168,9 +170,9 @@ impl CrdsGossipPush {
         pubkey: &Pubkey, // This node.
         crds: &RwLock<Crds>,
         now: u64,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) -> (
-        HashMap<Pubkey, Vec<CrdsValue>>,
+        AHashMap<Pubkey, Vec<CrdsValue>>,
         usize, // number of values
         usize, // number of push messages
     ) {
@@ -178,7 +180,7 @@ impl CrdsGossipPush {
         let active_set = self.active_set.read().unwrap();
         let mut num_pushes = 0;
         let mut num_values = 0;
-        let mut push_messages: HashMap<Pubkey, Vec<CrdsValue>> = HashMap::new();
+        let mut push_messages: AHashMap<Pubkey, Vec<CrdsValue>> = AHashMap::new();
         let wallclock_window = self.wallclock_window(now);
         let mut crds_cursor = self.crds_cursor.lock().unwrap();
         // crds should be locked last after self.{active_set,crds_cursor}.
@@ -217,7 +219,7 @@ impl CrdsGossipPush {
         self_pubkey: &Pubkey,
         peer: &Pubkey,
         origins: &[Pubkey],
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) {
         let active_set = self.active_set.read().unwrap();
         active_set.prune(self_pubkey, peer, origins, stakes);
@@ -228,7 +230,7 @@ impl CrdsGossipPush {
     pub(crate) fn refresh_push_active_set(
         &self,
         crds: &RwLock<Crds>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         gossip_validators: Option<&HashSet<Pubkey>>,
         self_keypair: &Keypair,
         self_shred_version: u16,
@@ -396,7 +398,7 @@ mod tests {
         let ping_cache = Mutex::new(ping_cache);
         push.refresh_push_active_set(
             &crds,
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             None,            // gossip_validtors
             &Keypair::new(),
             0, // self_shred_version
@@ -409,7 +411,7 @@ mod tests {
             &solana_sdk::pubkey::new_rand(),
             0,
         )));
-        let mut expected = HashMap::new();
+        let mut expected = AHashMap::new();
         expected.insert(peer.label().pubkey(), vec![new_msg.clone()]);
         let origin = new_msg.pubkey();
         assert_eq!(
@@ -421,7 +423,7 @@ mod tests {
                 &Pubkey::default(),
                 &crds,
                 0,
-                &HashMap::<Pubkey, u64>::default(), // stakes
+                &AHashMap::<Pubkey, u64>::default(), // stakes
             )
             .0,
             expected
@@ -464,7 +466,7 @@ mod tests {
         let ping_cache = Mutex::new(ping_cache);
         push.refresh_push_active_set(
             &crds,
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             None,            // gossip_validators
             &Keypair::new(),
             0, // self_shred_version
@@ -474,7 +476,7 @@ mod tests {
         );
 
         // push 3's contact info to 1 and 2 and 3
-        let expected: HashMap<_, _> = vec![
+        let expected: AHashMap<_, _> = vec![
             (peers[0].pubkey(), vec![peers[2].clone()]),
             (peers[1].pubkey(), vec![peers[2].clone()]),
         ]
@@ -485,7 +487,7 @@ mod tests {
                 &Pubkey::default(),
                 &crds,
                 now,
-                &HashMap::<Pubkey, u64>::default(), // stakes
+                &AHashMap::<Pubkey, u64>::default(), // stakes
             )
             .0,
             expected
@@ -508,7 +510,7 @@ mod tests {
         let ping_cache = Mutex::new(new_ping_cache());
         push.refresh_push_active_set(
             &crds,
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             None,            // gossip_validators
             &Keypair::new(),
             0, // self_shred_version
@@ -521,7 +523,7 @@ mod tests {
             &solana_sdk::pubkey::new_rand(),
             0,
         )));
-        let expected = HashMap::new();
+        let expected = AHashMap::new();
         let origin = new_msg.pubkey();
         assert_eq!(
             push.process_push_message(&crds, vec![(Pubkey::default(), vec![new_msg.clone()])], 0),
@@ -531,14 +533,14 @@ mod tests {
             &self_id,
             &peer.label().pubkey(),
             &[new_msg.label().pubkey()],
-            &HashMap::<Pubkey, u64>::default(), // stakes
+            &AHashMap::<Pubkey, u64>::default(), // stakes
         );
         assert_eq!(
             push.new_push_messages(
                 &self_id,
                 &crds,
                 0,
-                &HashMap::<Pubkey, u64>::default(), // stakes
+                &AHashMap::<Pubkey, u64>::default(), // stakes
             )
             .0,
             expected
@@ -557,7 +559,7 @@ mod tests {
         let ping_cache = Mutex::new(new_ping_cache());
         push.refresh_push_active_set(
             &crds,
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             None,            // gossip_validators
             &Keypair::new(),
             0, // self_shred_version
@@ -569,7 +571,7 @@ mod tests {
         let mut ci = ContactInfo::new_localhost(&solana_sdk::pubkey::new_rand(), 0);
         ci.set_wallclock(1);
         let new_msg = CrdsValue::new_unsigned(CrdsData::ContactInfo(ci));
-        let expected = HashMap::new();
+        let expected = AHashMap::new();
         let origin = new_msg.pubkey();
         assert_eq!(
             push.process_push_message(&crds, vec![(Pubkey::default(), vec![new_msg])], 1),
@@ -580,7 +582,7 @@ mod tests {
                 &Pubkey::default(),
                 &crds,
                 0,
-                &HashMap::<Pubkey, u64>::default(), // stakes
+                &AHashMap::<Pubkey, u64>::default(), // stakes
             )
             .0,
             expected

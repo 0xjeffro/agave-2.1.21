@@ -23,13 +23,14 @@ use {
         time::{Duration, Instant},
     },
     thiserror::Error,
+    ahash::AHashMap,
 };
 
 // Total stake and nodes => stake map
 #[derive(Default)]
 pub struct StakedNodes {
-    stakes: Arc<HashMap<Pubkey, u64>>,
-    overrides: HashMap<Pubkey, u64>,
+    stakes: Arc<AHashMap<Pubkey, u64>>,
+    overrides: AHashMap<Pubkey, u64>,
     total_stake: u64,
     max_stake: u64,
     min_stake: u64,
@@ -302,7 +303,7 @@ impl StreamerSendStats {
 }
 
 impl StakedNodes {
-    pub fn new(stakes: Arc<HashMap<Pubkey, u64>>, overrides: HashMap<Pubkey, u64>) -> Self {
+    pub fn new(stakes: Arc<AHashMap<Pubkey, u64>>, overrides: AHashMap<Pubkey, u64>) -> Self {
         let values = stakes
             .iter()
             .filter(|(pubkey, _)| !overrides.contains_key(pubkey))

@@ -6,9 +6,10 @@ use solana_sdk::{
 };
 use std::{
     borrow::Borrow,
-    collections::{BTreeMap, HashMap},
+    collections::{BTreeMap},
     time::Duration,
 };
+use ahash::AHashMap;
 
 // Obsolete limits
 const _MAX_ALLOWABLE_DRIFT_PERCENTAGE: u32 = 50;
@@ -25,7 +26,7 @@ pub(crate) struct MaxAllowableDrift {
 
 pub(crate) fn calculate_stake_weighted_timestamp<I, K, V, T>(
     unique_timestamps: I,
-    stakes: &HashMap<Pubkey, (u64, T /*Account|VoteAccount*/)>,
+    stakes: &AHashMap<Pubkey, (u64, T /*Account|VoteAccount*/)>,
     slot: Slot,
     slot_duration: Duration,
     epoch_start_timestamp: Option<(Slot, UnixTimestamp)>,
@@ -120,7 +121,7 @@ pub mod tests {
         let max_allowable_drift = MaxAllowableDrift { fast: 25, slow: 25 };
 
         // Test low-staked outlier(s)
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (sol_to_lamports(1.0), Account::new(1, 0, &Pubkey::default())),
@@ -155,7 +156,7 @@ pub mod tests {
         .cloned()
         .collect();
 
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (5, 0)),
             (pubkey1, (5, recent_timestamp)),
             (pubkey2, (5, recent_timestamp)),
@@ -179,7 +180,7 @@ pub mod tests {
         // With no bounding, timestamp w/ 0.00003% of the stake can shift the timestamp backward 8min
         assert_eq!(bounded, recent_timestamp); // low-staked outlier cannot affect bounded timestamp
 
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (5, recent_timestamp)),
             (pubkey1, (5, i64::MAX)),
             (pubkey2, (5, recent_timestamp)),
@@ -203,7 +204,7 @@ pub mod tests {
         // With no bounding, timestamp w/ 0.00003% of the stake can shift the timestamp forward 97k years!
         assert_eq!(bounded, recent_timestamp); // low-staked outlier cannot affect bounded timestamp
 
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (5, 0)),
             (pubkey1, (5, i64::MAX)),
             (pubkey2, (5, recent_timestamp)),
@@ -227,7 +228,7 @@ pub mod tests {
         assert_eq!(bounded, recent_timestamp); // multiple low-staked outliers cannot affect bounded timestamp if they don't shift the median
 
         // Test higher-staked outlier(s)
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (
@@ -254,7 +255,7 @@ pub mod tests {
         .cloned()
         .collect();
 
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (5, 0)),
             (pubkey1, (5, i64::MAX)),
             (pubkey2, (5, recent_timestamp)),
@@ -275,7 +276,7 @@ pub mod tests {
         .unwrap();
         assert_eq!(bounded, recent_timestamp); // outlier(s) cannot affect bounded timestamp if they don't shift the median
 
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (
@@ -295,7 +296,7 @@ pub mod tests {
         .cloned()
         .collect();
 
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> =
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> =
             [(pubkey0, (5, 0)), (pubkey1, (5, recent_timestamp))]
                 .iter()
                 .cloned()
@@ -331,7 +332,7 @@ pub mod tests {
         let pubkey1 = solana_sdk::pubkey::new_rand();
         let pubkey2 = solana_sdk::pubkey::new_rand();
 
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (
@@ -359,7 +360,7 @@ pub mod tests {
         .collect();
 
         // Test when stake-weighted median is too high
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (slot as u64, poh_estimate + acceptable_delta + 1)),
             (pubkey1, (slot as u64, poh_estimate + acceptable_delta + 1)),
             (pubkey2, (slot as u64, poh_estimate + acceptable_delta + 1)),
@@ -381,7 +382,7 @@ pub mod tests {
         assert_eq!(bounded, poh_estimate + acceptable_delta);
 
         // Test when stake-weighted median is too low
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (slot as u64, poh_estimate - acceptable_delta - 1)),
             (pubkey1, (slot as u64, poh_estimate - acceptable_delta - 1)),
             (pubkey2, (slot as u64, poh_estimate - acceptable_delta - 1)),
@@ -403,7 +404,7 @@ pub mod tests {
         assert_eq!(bounded, poh_estimate - acceptable_delta);
 
         // Test stake-weighted median within bounds
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (slot as u64, poh_estimate + acceptable_delta)),
             (pubkey1, (slot as u64, poh_estimate + acceptable_delta)),
             (pubkey2, (slot as u64, poh_estimate + acceptable_delta)),
@@ -424,7 +425,7 @@ pub mod tests {
         .unwrap();
         assert_eq!(bounded, poh_estimate + acceptable_delta);
 
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (slot as u64, poh_estimate - acceptable_delta)),
             (pubkey1, (slot as u64, poh_estimate - acceptable_delta)),
             (pubkey2, (slot as u64, poh_estimate - acceptable_delta)),
@@ -472,7 +473,7 @@ pub mod tests {
         let pubkey1 = solana_sdk::pubkey::new_rand();
         let pubkey2 = solana_sdk::pubkey::new_rand();
 
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (
@@ -500,7 +501,7 @@ pub mod tests {
         .collect();
 
         // Test when stake-weighted median is above 25% deviance but below 50% deviance
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (
                 pubkey0,
                 (slot as u64, poh_estimate + acceptable_delta_25 + 1),
@@ -543,7 +544,7 @@ pub mod tests {
         assert_eq!(bounded, poh_estimate + acceptable_delta_25 + 1);
 
         // Test when stake-weighted median is above 50% deviance
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (
                 pubkey0,
                 (slot as u64, poh_estimate + acceptable_delta_50 + 1),
@@ -608,7 +609,7 @@ pub mod tests {
         let pubkey1 = solana_sdk::pubkey::new_rand();
         let pubkey2 = solana_sdk::pubkey::new_rand();
 
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (
@@ -636,7 +637,7 @@ pub mod tests {
         .collect();
 
         // Test when stake-weighted median is more than 25% fast
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (
                 pubkey0,
                 (slot as u64, poh_estimate - acceptable_delta_fast - 1),
@@ -667,7 +668,7 @@ pub mod tests {
         assert_eq!(bounded, poh_estimate - acceptable_delta_fast);
 
         // Test when stake-weighted median is more than 25% but less than 50% slow
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (
                 pubkey0,
                 (slot as u64, poh_estimate + acceptable_delta_fast + 1),
@@ -698,7 +699,7 @@ pub mod tests {
         assert_eq!(bounded, poh_estimate + acceptable_delta_fast + 1);
 
         // Test when stake-weighted median is more than 50% slow
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (
                 pubkey0,
                 (slot as u64, poh_estimate + acceptable_delta_slow + 1),
@@ -746,7 +747,7 @@ pub mod tests {
         let pubkey1 = solana_sdk::pubkey::new_rand();
         let pubkey2 = solana_sdk::pubkey::new_rand();
 
-        let stakes: HashMap<Pubkey, (u64, Account)> = [
+        let stakes: AHashMap<Pubkey, (u64, Account)> = [
             (
                 pubkey0,
                 (
@@ -774,7 +775,7 @@ pub mod tests {
         .collect();
 
         // Test when stake-weighted median is before epoch_start_timestamp
-        let unique_timestamps: HashMap<Pubkey, (Slot, UnixTimestamp)> = [
+        let unique_timestamps: AHashMap<Pubkey, (Slot, UnixTimestamp)> = [
             (pubkey0, (slot as u64, poh_estimate - acceptable_delta - 20)),
             (pubkey1, (slot as u64, poh_estimate - acceptable_delta - 20)),
             (pubkey2, (slot as u64, poh_estimate - acceptable_delta - 20)),

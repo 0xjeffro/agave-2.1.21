@@ -3,6 +3,7 @@ use {
     lru::LruCache,
     solana_sdk::pubkey::Pubkey,
     std::{cmp::Reverse, collections::HashMap},
+    ahash::AHashMap,
 };
 
 // For each origin, tracks which nodes have sent messages from that origin and
@@ -40,7 +41,7 @@ impl ReceivedCache {
         origin: Pubkey,  // CRDS value owner.
         stake_threshold: f64,
         min_ingress_nodes: usize,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) -> impl Iterator<Item = Pubkey> {
         match self.0.peek_mut(&origin) {
             None => None,
@@ -96,7 +97,7 @@ impl ReceivedCacheEntry {
         origin: &Pubkey, // CRDS value owner.
         stake_threshold: f64,
         min_ingress_nodes: usize,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) -> impl Iterator<Item = Pubkey> {
         debug_assert!((0.0..=1.0).contains(&stake_threshold));
         debug_assert!(self.num_upserts >= ReceivedCache::MIN_NUM_UPSERTS);

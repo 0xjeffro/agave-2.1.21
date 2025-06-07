@@ -98,6 +98,7 @@ use {
         time::{Duration, Instant},
     },
     thiserror::Error,
+    ahash::AHashMap,
 };
 
 /// milliseconds we sleep for between gossip requests
@@ -421,7 +422,7 @@ impl Sanitize for Protocol {
 // (some crds types are exempted)
 fn retain_staked(
     values: &mut Vec<CrdsValue>,
-    stakes: &HashMap<Pubkey, u64>,
+    stakes: &AHashMap<Pubkey, u64>,
     drop_unstaked_node_instance: bool,
 ) {
     values.retain(|value| {
@@ -495,7 +496,7 @@ impl ClusterInfo {
     fn refresh_push_active_set(
         &self,
         recycler: &PacketBatchRecycler,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         gossip_validators: Option<&HashSet<Pubkey>>,
         sender: &PacketBatchSender,
     ) {
@@ -1573,7 +1574,7 @@ impl ClusterInfo {
         &self,
         thread_pool: &ThreadPool,
         gossip_validators: Option<&HashSet<Pubkey>>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) -> (
         Vec<(SocketAddr, Ping)>,     // Ping packets.
         Vec<(SocketAddr, Protocol)>, // Pull requests
@@ -1634,7 +1635,7 @@ impl ClusterInfo {
             }
         }
     }
-    fn new_push_requests(&self, stakes: &HashMap<Pubkey, u64>) -> Vec<(SocketAddr, Protocol)> {
+    fn new_push_requests(&self, stakes: &AHashMap<Pubkey, u64>) -> Vec<(SocketAddr, Protocol)> {
         let self_id = self.id();
         let (mut push_messages, num_entries, num_nodes) = {
             let _st = ScopedTimer::from(&self.stats.new_push_requests);
@@ -1682,7 +1683,7 @@ impl ClusterInfo {
         &self,
         thread_pool: &ThreadPool,
         gossip_validators: Option<&HashSet<Pubkey>>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         generate_pull_requests: bool,
     ) -> Vec<(SocketAddr, Protocol)> {
         self.trim_crds_table(CRDS_UNIQUE_PUBKEY_CAPACITY, stakes);
@@ -1715,7 +1716,7 @@ impl ClusterInfo {
         thread_pool: &ThreadPool,
         gossip_validators: Option<&HashSet<Pubkey>>,
         recycler: &PacketBatchRecycler,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         sender: &PacketBatchSender,
         generate_pull_requests: bool,
     ) -> Result<(), GossipError> {
@@ -1789,7 +1790,7 @@ impl ClusterInfo {
         &self,
         thread_pool: &ThreadPool,
         bank_forks: Option<&RwLock<BankForks>>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) {
         let self_pubkey = self.id();
         let epoch_duration = get_epoch_duration(bank_forks, &self.stats);
@@ -1806,7 +1807,7 @@ impl ClusterInfo {
 
     // Trims the CRDS table by dropping all values associated with the pubkeys
     // with the lowest stake, so that the number of unique pubkeys are bounded.
-    fn trim_crds_table(&self, cap: usize, stakes: &HashMap<Pubkey, u64>) {
+    fn trim_crds_table(&self, cap: usize, stakes: &AHashMap<Pubkey, u64>) {
         if !self.gossip.crds.read().unwrap().should_trim(cap) {
             return;
         }
@@ -1935,7 +1936,7 @@ impl ClusterInfo {
             .unwrap()
     }
 
-    fn handle_batch_prune_messages(&self, messages: Vec<PruneData>, stakes: &HashMap<Pubkey, u64>) {
+    fn handle_batch_prune_messages(&self, messages: Vec<PruneData>, stakes: &AHashMap<Pubkey, u64>) {
         let _st = ScopedTimer::from(&self.stats.handle_batch_prune_messages_time);
         if messages.is_empty() {
             return;
@@ -1990,7 +1991,7 @@ impl ClusterInfo {
         requests: Vec<(SocketAddr, CrdsFilter, CrdsValue)>,
         thread_pool: &ThreadPool,
         recycler: &PacketBatchRecycler,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         response_sender: &PacketBatchSender,
     ) {
         let _st = ScopedTimer::from(&self.stats.handle_batch_pull_requests_time);
@@ -2103,7 +2104,7 @@ impl ClusterInfo {
         thread_pool: &ThreadPool,
         recycler: &PacketBatchRecycler,
         requests: Vec<PullData>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) -> PacketBatch {
         const DEFAULT_EPOCH_DURATION_MS: u64 = DEFAULT_SLOTS_PER_EPOCH * DEFAULT_MS_PER_SLOT;
         let mut time = Measure::start("handle_pull_requests");
@@ -2205,7 +2206,7 @@ impl ClusterInfo {
     fn handle_batch_pull_responses(
         &self,
         responses: Vec<CrdsValue>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         epoch_duration: Duration,
     ) {
         let _st = ScopedTimer::from(&self.stats.handle_batch_pull_responses_time);
@@ -2325,7 +2326,7 @@ impl ClusterInfo {
         messages: Vec<(Pubkey, Vec<CrdsValue>)>,
         thread_pool: &ThreadPool,
         recycler: &PacketBatchRecycler,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         response_sender: &PacketBatchSender,
     ) {
         let _st = ScopedTimer::from(&self.stats.handle_batch_push_messages_time);
@@ -2423,7 +2424,7 @@ impl ClusterInfo {
         }
     }
 
-    fn require_stake_for_gossip(&self, stakes: &HashMap<Pubkey, u64>) -> bool {
+    fn require_stake_for_gossip(&self, stakes: &AHashMap<Pubkey, u64>) -> bool {
         if stakes.len() < MIN_NUM_STAKED_NODES {
             self.stats
                 .require_stake_for_gossip_unknown_stakes
@@ -2440,7 +2441,7 @@ impl ClusterInfo {
         thread_pool: &ThreadPool,
         recycler: &PacketBatchRecycler,
         response_sender: &PacketBatchSender,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         _feature_set: Option<&FeatureSet>,
         epoch_duration: Duration,
         should_check_duplicate_instance: bool,
@@ -3367,7 +3368,7 @@ fn verify_gossip_addr<R: Rng + CryptoRng>(
     rng: &mut R,
     keypair: &Keypair,
     value: &CrdsValue,
-    stakes: &HashMap<Pubkey, u64>,
+    stakes: &AHashMap<Pubkey, u64>,
     socket_addr_space: &SocketAddrSpace,
     ping_cache: &Mutex<PingCache>,
     pings: &mut Vec<(SocketAddr, Protocol /* ::PingMessage */)>,
@@ -3450,7 +3451,7 @@ mod tests {
         });
         let entrypoint_pubkey = solana_sdk::pubkey::new_rand();
         let data = test_crds_values(entrypoint_pubkey);
-        let stakes = HashMap::from([(Pubkey::new_unique(), 1u64)]);
+        let stakes = AHashMap::from([(Pubkey::new_unique(), 1u64)]);
         let timeouts = CrdsTimeouts::new(
             cluster_info.id(),
             CRDS_GOSSIP_PULL_CRDS_TIMEOUT_MS, // default_timeout
@@ -3755,7 +3756,7 @@ mod tests {
         cluster_info.gossip.refresh_push_active_set(
             &cluster_info.keypair(),
             cluster_info.my_shred_version(),
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             None,            // gossip validators
             &cluster_info.ping_cache,
             &mut Vec::new(), // pings
@@ -3764,7 +3765,7 @@ mod tests {
         let reqs = cluster_info.generate_new_gossip_requests(
             &thread_pool,
             None,            // gossip_validators
-            &HashMap::new(), // stakes
+            &AHashMap::new(), // stakes
             true,            // generate_pull_requests
         );
         //assert none of the addrs are invalid.
@@ -3882,7 +3883,7 @@ mod tests {
             Arc::new(keypair),
             SocketAddrSpace::Unspecified,
         );
-        let stakes = HashMap::<Pubkey, u64>::default();
+        let stakes = AHashMap::<Pubkey, u64>::default();
         cluster_info.ping_cache.lock().unwrap().mock_pong(
             *peer.pubkey(),
             peer.gossip().unwrap(),
@@ -3919,7 +3920,7 @@ mod tests {
                 cluster_info.my_shred_version(),
                 timestamp(),
                 None,
-                &HashMap::new(),
+                &AHashMap::new(),
                 MAX_BLOOM_SIZE,
                 &cluster_info.ping_cache,
                 &mut pings,
@@ -4248,7 +4249,7 @@ mod tests {
         let entrypoint_pubkey = solana_sdk::pubkey::new_rand();
         let entrypoint = ContactInfo::new_localhost(&entrypoint_pubkey, timestamp());
         cluster_info.set_entrypoint(entrypoint.clone());
-        let (pings, pulls) = cluster_info.new_pull_requests(&thread_pool, None, &HashMap::new());
+        let (pings, pulls) = cluster_info.new_pull_requests(&thread_pool, None, &AHashMap::new());
         assert!(pings.is_empty());
         assert_eq!(pulls.len(), MIN_NUM_BLOOM_FILTERS);
         for (addr, msg) in pulls {
@@ -4265,14 +4266,14 @@ mod tests {
         let entrypoint_crdsvalue =
             CrdsValue::new_unsigned(CrdsData::ContactInfo(entrypoint.clone()));
         let cluster_info = Arc::new(cluster_info);
-        let stakes = HashMap::from([(Pubkey::new_unique(), 1u64)]);
+        let stakes = AHashMap::from([(Pubkey::new_unique(), 1u64)]);
         let timeouts = cluster_info.gossip.make_timeouts(
             cluster_info.id(),
             &stakes,
             Duration::from_millis(cluster_info.gossip.pull.crds_timeout),
         );
         cluster_info.handle_pull_response(vec![entrypoint_crdsvalue], &timeouts);
-        let (pings, pulls) = cluster_info.new_pull_requests(&thread_pool, None, &HashMap::new());
+        let (pings, pulls) = cluster_info.new_pull_requests(&thread_pool, None, &AHashMap::new());
         assert_eq!(pings.len(), 1);
         assert_eq!(pulls.len(), MIN_NUM_BLOOM_FILTERS);
         assert_eq!(*cluster_info.entrypoints.read().unwrap(), vec![entrypoint]);
@@ -4443,7 +4444,7 @@ mod tests {
             .unwrap();
         cluster_info.set_entrypoint(entrypoint.clone());
 
-        let mut stakes = HashMap::new();
+        let mut stakes = AHashMap::new();
 
         let other_node_pubkey = solana_sdk::pubkey::new_rand();
         let other_node = ContactInfo::new_localhost(&other_node_pubkey, timestamp());
@@ -4769,7 +4770,7 @@ mod tests {
         })
         .take(NO_ENTRIES)
         .collect();
-        let stakes = HashMap::from([(Pubkey::new_unique(), 1u64)]);
+        let stakes = AHashMap::from([(Pubkey::new_unique(), 1u64)]);
         let timeouts = CrdsTimeouts::new(
             cluster_info.id(),
             CRDS_GOSSIP_PULL_CRDS_TIMEOUT_MS * 4, // default_timeout

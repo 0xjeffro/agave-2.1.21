@@ -2353,6 +2353,7 @@ pub mod tests {
         std::{collections::BTreeSet, sync::RwLock},
         test_case::test_case,
         trees::tr,
+        ahash::AHashMap,
     };
 
     // Convenience wrapper to optionally process blockstore with Secondary access.
@@ -4703,7 +4704,7 @@ pub mod tests {
         let total_stake = 10;
 
         // Supermajority root should be None
-        assert!(supermajority_root_from_vote_accounts(total_stake, &HashMap::default()).is_none());
+        assert!(supermajority_root_from_vote_accounts(total_stake, &AHashMap::default()).is_none());
 
         // Supermajority root should be None
         let roots_stakes = vec![(8, 1), (3, 1), (4, 1), (8, 1)];

@@ -47,6 +47,7 @@ use {
         },
         time::Duration,
     },
+    ahash::AHashMap,
 };
 
 pub const CRDS_GOSSIP_PULL_CRDS_TIMEOUT_MS: u64 = 15000;
@@ -232,7 +233,7 @@ impl CrdsGossipPull {
         self_shred_version: u16,
         now: u64,
         gossip_validators: Option<&HashSet<Pubkey>>,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
         bloom_size: usize,
         ping_cache: &Mutex<PingCache>,
         pings: &mut Vec<(SocketAddr, Ping)>,
@@ -506,7 +507,7 @@ impl CrdsGossipPull {
     pub(crate) fn make_timeouts<'a>(
         &self,
         self_pubkey: Pubkey,
-        stakes: &'a HashMap<Pubkey, u64>,
+        stakes: &'a AHashMap<Pubkey, u64>,
         epoch_duration: Duration,
     ) -> CrdsTimeouts<'a> {
         CrdsTimeouts::new(self_pubkey, self.crds_timeout, epoch_duration, stakes)
@@ -557,7 +558,7 @@ impl CrdsGossipPull {
 
 pub struct CrdsTimeouts<'a> {
     pubkey: Pubkey,
-    stakes: &'a HashMap<Pubkey, /*lamports:*/ u64>,
+    stakes: &'a AHashMap<Pubkey, /*lamports:*/ u64>,
     default_timeout: u64,
     extended_timeout: u64,
 }
@@ -567,7 +568,7 @@ impl<'a> CrdsTimeouts<'a> {
         pubkey: Pubkey,
         default_timeout: u64,
         epoch_duration: Duration,
-        stakes: &'a HashMap<Pubkey, u64>,
+        stakes: &'a AHashMap<Pubkey, u64>,
     ) -> Self {
         let extended_timeout = default_timeout.max(epoch_duration.as_millis() as u64);
         let default_timeout = if stakes.values().all(|&stake| stake == 0u64) {
@@ -802,7 +803,7 @@ pub(crate) mod tests {
                 0,
                 0,
                 None,
-                &HashMap::new(),
+                &AHashMap::new(),
                 PACKET_DATA_SIZE,
                 &ping_cache,
                 &mut pings,
@@ -823,7 +824,7 @@ pub(crate) mod tests {
                 0,
                 0,
                 None,
-                &HashMap::new(),
+                &AHashMap::new(),
                 PACKET_DATA_SIZE,
                 &ping_cache,
                 &mut pings,
@@ -849,7 +850,7 @@ pub(crate) mod tests {
             0,
             now,
             None,
-            &HashMap::new(),
+            &AHashMap::new(),
             PACKET_DATA_SIZE,
             &ping_cache,
             &mut pings,
@@ -871,7 +872,7 @@ pub(crate) mod tests {
             0,
             now,
             None,
-            &HashMap::new(),
+            &AHashMap::new(),
             PACKET_DATA_SIZE,
             &ping_cache,
             &mut pings,
@@ -928,7 +929,7 @@ pub(crate) mod tests {
                     0, // self_shred_version
                     now,
                     None,             // gossip_validators
-                    &HashMap::new(),  // stakes
+                    &AHashMap::new(),  // stakes
                     PACKET_DATA_SIZE, // bloom_size
                     &ping_cache,
                     &mut pings,
@@ -979,7 +980,7 @@ pub(crate) mod tests {
             0, // self_shred_version
             now,
             None,             // gossip_validators
-            &HashMap::new(),  // stakes
+            &AHashMap::new(),  // stakes
             PACKET_DATA_SIZE, // bloom_size
             &Mutex::new(ping_cache),
             &mut pings,
@@ -1113,7 +1114,7 @@ pub(crate) mod tests {
                 0,
                 0,
                 None,
-                &HashMap::new(),
+                &AHashMap::new(),
                 PACKET_DATA_SIZE,
                 &ping_cache,
                 &mut pings,
@@ -1142,7 +1143,7 @@ pub(crate) mod tests {
             let failed = node
                 .process_pull_response(
                     &node_crds,
-                    &node.make_timeouts(node_pubkey, &HashMap::new(), Duration::default()),
+                    &node.make_timeouts(node_pubkey, &AHashMap::new(), Duration::default()),
                     rsp.into_iter().flatten().collect(),
                     1,
                 )
@@ -1196,7 +1197,7 @@ pub(crate) mod tests {
         );
         // purge
         let node_crds = RwLock::new(node_crds);
-        let stakes = HashMap::from([(Pubkey::new_unique(), 1u64)]);
+        let stakes = AHashMap::from([(Pubkey::new_unique(), 1u64)]);
         let timeouts = node.make_timeouts(node_pubkey, &stakes, Duration::default());
         CrdsGossipPull::purge_active(&thread_pool, &node_crds, node.crds_timeout, &timeouts);
 
@@ -1312,7 +1313,7 @@ pub(crate) mod tests {
         let peer_entry = CrdsValue::new_unsigned(CrdsData::ContactInfo(
             ContactInfo::new_localhost(&peer_pubkey, 0),
         ));
-        let stakes = HashMap::from([(peer_pubkey, 1u64)]);
+        let stakes = AHashMap::from([(peer_pubkey, 1u64)]);
         let timeouts = CrdsTimeouts::new(
             Pubkey::new_unique(),
             node.crds_timeout, // default_timeout

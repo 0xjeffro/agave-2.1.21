@@ -13442,7 +13442,7 @@ fn test_bank_epoch_stakes() {
                     .unwrap();
                     (authorized_voter, (stake_coefficient, vote_account))
                 })
-                .collect::<HashMap<_, _>>(),
+                .collect::<AHashMap<_, _>>(),
             1,
         )
     };

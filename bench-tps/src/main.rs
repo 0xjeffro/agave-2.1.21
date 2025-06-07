@@ -29,6 +29,7 @@ use {
         process::exit,
         sync::{Arc, RwLock},
     },
+    ahash::AHashMap,
 };
 
 /// Number of signatures for all transactions in ~1 week at ~100K TPS
@@ -100,13 +101,13 @@ fn create_connection_cache(
     let (stake, total_stake) =
         find_node_activated_stake(rpc_client, client_node_id.pubkey()).unwrap_or_default();
     info!("Stake for specified client_node_id: {stake}, total stake: {total_stake}");
-    let stakes = HashMap::from([
+    let stakes = AHashMap::from([
         (client_node_id.pubkey(), stake),
         (Pubkey::new_unique(), total_stake - stake),
     ]);
     let staked_nodes = Arc::new(RwLock::new(StakedNodes::new(
         Arc::new(stakes),
-        HashMap::<Pubkey, u64>::default(), // overrides
+        AHashMap::<Pubkey, u64>::default(), // overrides
     )));
     ConnectionCache::new_with_client_options(
         "bench-tps-connection_cache_quic",

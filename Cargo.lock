@@ -244,6 +244,7 @@ name = "agave-validator"
 version = "2.1.21"
 dependencies = [
  "agave-geyser-plugin-interface",
+ "ahash 0.8.11",
  "assert_cmd",
  "chrono",
  "clap 2.33.3",
@@ -5948,6 +5949,7 @@ dependencies = [
 name = "solana-bench-tps"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "chrono",
  "clap 2.33.3",
  "crossbeam-channel",
@@ -6844,6 +6846,7 @@ dependencies = [
 name = "solana-gossip"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "assert_matches",
  "bincode",
  "bv",
@@ -7091,6 +7094,7 @@ dependencies = [
 name = "solana-local-cluster"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "assert_matches",
  "crossbeam-channel",
  "fs_extra",
@@ -8317,6 +8321,7 @@ dependencies = [
 name = "solana-streamer"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "assert_matches",
  "async-channel",
  "bytes",
@@ -8490,6 +8495,7 @@ dependencies = [
 name = "solana-test-validator"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "base64 0.22.1",
  "bincode",
  "crossbeam-channel",
@@ -8578,6 +8584,7 @@ dependencies = [
 name = "solana-tps-client"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "log",
  "serial_test",
  "solana-client",
@@ -8620,6 +8627,7 @@ dependencies = [
 name = "solana-tpu-client-next"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "async-trait",
  "crossbeam-channel",
  "futures 0.3.31",
@@ -8739,6 +8747,7 @@ dependencies = [
 name = "solana-turbine"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "assert_matches",
  "bincode",
  "bytes",
@@ -8856,6 +8865,7 @@ dependencies = [
 name = "solana-vote"
 version = "2.1.21"
 dependencies = [
+ "ahash 0.8.11",
  "bincode",
  "itertools 0.12.1",
  "log",

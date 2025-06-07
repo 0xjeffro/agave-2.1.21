@@ -16,6 +16,7 @@ use {
         collections::HashMap,
         sync::{Arc, RwLock},
     },
+    ahash::AHashMap,
 };
 
 // Normally num_chunks is 3, because there are two shreds (each is one packet)
@@ -43,7 +44,7 @@ pub struct DuplicateShredHandler {
     bank_forks: Arc<RwLock<BankForks>>,
     // Cache information from root bank so we could function correctly without reading roots.
     cached_on_epoch: Epoch,
-    cached_staked_nodes: Arc<HashMap<Pubkey, u64>>,
+    cached_staked_nodes: Arc<AHashMap<Pubkey, u64>>,
     cached_slots_in_epoch: u64,
     // Used to notify duplicate consensus state machine
     duplicate_slots_sender: Sender<Slot>,
@@ -81,7 +82,7 @@ impl DuplicateShredHandler {
             consumed: HashMap::<Slot, bool>::default(),
             last_root: 0,
             cached_on_epoch: 0,
-            cached_staked_nodes: Arc::new(HashMap::new()),
+            cached_staked_nodes: Arc::new(AHashMap::new()),
             cached_slots_in_epoch: 0,
             blockstore,
             leader_schedule_cache,

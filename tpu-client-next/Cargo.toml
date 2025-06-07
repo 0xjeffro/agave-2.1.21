@@ -9,6 +9,7 @@ license = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
+ahash = { workspace = true, features = ["serde"] }
 async-trait = { workspace = true }
 log = { workspace = true }
 lru = { workspace = true }

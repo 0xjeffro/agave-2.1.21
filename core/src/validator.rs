@@ -1,6 +1,7 @@
 //! The `validator` module hosts all the validator microservices.
 
 pub use solana_perf::report_target_features;
+use ahash::AHashMap;
 use {
     crate::{
         accounts_hash_verifier::AccountsHashVerifier,
@@ -267,7 +268,7 @@ pub struct ValidatorConfig {
     pub accounts_db_skip_shrink: bool,
     pub accounts_db_force_initial_clean: bool,
     pub tpu_coalesce: Duration,
-    pub staked_nodes_overrides: Arc<RwLock<HashMap<Pubkey, u64>>>,
+    pub staked_nodes_overrides: Arc<RwLock<AHashMap<Pubkey, u64>>>,
     pub validator_exit: Arc<RwLock<Exit>>,
     pub no_wait_for_vote_to_start_leader: bool,
     pub wait_to_vote_slot: Option<Slot>,
@@ -338,7 +339,7 @@ impl Default for ValidatorConfig {
             accounts_db_skip_shrink: false,
             accounts_db_force_initial_clean: false,
             tpu_coalesce: DEFAULT_TPU_COALESCE,
-            staked_nodes_overrides: Arc::new(RwLock::new(HashMap::new())),
+            staked_nodes_overrides: Arc::new(RwLock::new(AHashMap::new())),
             validator_exit: Arc::new(RwLock::new(Exit::default())),
             no_wait_for_vote_to_start_leader: true,
             accounts_db_config: None,

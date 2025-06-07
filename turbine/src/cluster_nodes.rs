@@ -35,6 +35,7 @@ use {
         time::{Duration, Instant},
     },
     thiserror::Error,
+    ahash::AHashMap,
 };
 
 const DATA_PLANE_FANOUT: usize = 200;
@@ -154,7 +155,7 @@ impl ClusterNodes<BroadcastStage> {
     pub fn new(
         cluster_info: &ClusterInfo,
         cluster_type: ClusterType,
-        stakes: &HashMap<Pubkey, u64>,
+        stakes: &AHashMap<Pubkey, u64>,
     ) -> Self {
         new_cluster_nodes(cluster_info, cluster_type, stakes)
     }
@@ -280,7 +281,7 @@ impl ClusterNodes<RetransmitStage> {
 pub fn new_cluster_nodes<T: 'static>(
     cluster_info: &ClusterInfo,
     cluster_type: ClusterType,
-    stakes: &HashMap<Pubkey, u64>,
+    stakes: &AHashMap<Pubkey, u64>,
 ) -> ClusterNodes<T> {
     let self_pubkey = cluster_info.id();
     let nodes = get_nodes(cluster_info, cluster_type, stakes);
@@ -309,7 +310,7 @@ pub fn new_cluster_nodes<T: 'static>(
 fn get_nodes(
     cluster_info: &ClusterInfo,
     cluster_type: ClusterType,
-    stakes: &HashMap<Pubkey, u64>,
+    stakes: &AHashMap<Pubkey, u64>,
 ) -> Vec<Node> {
     let self_pubkey = cluster_info.id();
     let should_dedup_addrs = match cluster_type {
@@ -524,7 +525,7 @@ pub fn make_test_cluster<R: Rng>(
     unstaked_ratio: Option<(u32, u32)>,
 ) -> (
     Vec<ContactInfo>,
-    HashMap<Pubkey, u64>, // stakes
+    AHashMap<Pubkey, u64>, // stakes
     ClusterInfo,
 ) {
     let (unstaked_numerator, unstaked_denominator) = unstaked_ratio.unwrap_or((1, 7));
@@ -538,7 +539,7 @@ pub fn make_test_cluster<R: Rng>(
     let keypair = Arc::new(Keypair::new());
     nodes[0] = ContactInfo::new_localhost(&keypair.pubkey(), /*wallclock:*/ timestamp());
     let this_node = nodes[0].clone();
-    let mut stakes: HashMap<Pubkey, u64> = nodes
+    let mut stakes: AHashMap<Pubkey, u64> = nodes
         .iter()
         .filter_map(|node| {
             if rng.gen_ratio(unstaked_numerator, unstaked_denominator) {

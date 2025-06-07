@@ -181,7 +181,7 @@ use {
     solana_vote::vote_account::{VoteAccount, VoteAccountsHashMap},
     solana_vote_program::vote_state::VoteState,
     std::{
-        collections::{HashMap, HashSet},
+        collections::{HashSet},
         convert::TryFrom,
         fmt,
         ops::{AddAssign, RangeFull, RangeInclusive},
@@ -694,7 +694,7 @@ pub struct OptionalDropCallback(Option<Box<dyn DropCallback + Send + Sync>>);
 #[derive(Default, Debug, Clone, PartialEq)]
 #[cfg(feature = "dev-context-only-utils")]
 pub struct HashOverrides {
-    hashes: HashMap<Slot, HashOverride>,
+    hashes: AHashMap<Slot, HashOverride>,
 }
 
 #[cfg(feature = "dev-context-only-utils")]
@@ -892,7 +892,7 @@ pub struct Bank {
 
     /// until the skipped rewrites feature is activated, it is possible to skip rewrites and still include
     /// the account hash of the accounts that would have been rewritten as bank hash expects.
-    skipped_rewrites: Mutex<HashMap<Pubkey, AccountHash>>,
+    skipped_rewrites: Mutex<AHashMap<Pubkey, AccountHash>>,
 
     epoch_reward_status: EpochRewardStatus,
 
@@ -2096,7 +2096,7 @@ impl Bank {
             // It is expensive to log the details of epoch stakes. Only log them at "trace"
             // level for debugging purpose.
             if log::log_enabled!(log::Level::Trace) {
-                let vote_stakes: HashMap<_, _> = self
+                let vote_stakes: AHashMap<_, _> = self
                     .stakes_cache
                     .stakes()
                     .vote_accounts()
@@ -4205,7 +4205,7 @@ impl Bank {
     /// Since we haven't started processing anything yet, it should be fast enough to simply
     /// load the accounts directly.
     /// Empirically, this takes about 3-4 milliseconds.
-    fn calculate_skipped_rewrites(&self) -> HashMap<Pubkey, AccountHash> {
+    fn calculate_skipped_rewrites(&self) -> AHashMap<Pubkey, AccountHash> {
         // The returned skipped rewrites may include accounts that were actually *not* skipped!
         // (This is safe, as per the fn's documentation above.)
         self.get_accounts_for_skipped_rewrites()
@@ -6332,11 +6332,11 @@ impl Bank {
     }
 
     /// Get the staked nodes map for the current Bank::epoch
-    pub fn current_epoch_staked_nodes(&self) -> Arc<HashMap<Pubkey, u64>> {
+    pub fn current_epoch_staked_nodes(&self) -> Arc<AHashMap<Pubkey, u64>> {
         self.current_epoch_stakes().stakes().staked_nodes()
     }
 
-    pub fn epoch_staked_nodes(&self, epoch: Epoch) -> Option<Arc<HashMap<Pubkey, u64>>> {
+    pub fn epoch_staked_nodes(&self, epoch: Epoch) -> Option<Arc<AHashMap<Pubkey, u64>>> {
         Some(self.epoch_stakes.get(&epoch)?.stakes().staked_nodes())
     }
 

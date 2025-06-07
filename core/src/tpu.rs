@@ -2,6 +2,7 @@
 //! multi-stage transaction processing pipeline in software.
 
 pub use solana_sdk::net::DEFAULT_TPU_COALESCE;
+use ahash::AHashMap;
 use {
     crate::{
         banking_stage::BankingStage,
@@ -109,7 +110,7 @@ impl Tpu {
         keypair: &Keypair,
         log_messages_bytes_limit: Option<usize>,
         staked_nodes: &Arc<RwLock<StakedNodes>>,
-        shared_staked_nodes_overrides: Arc<RwLock<HashMap<Pubkey, u64>>>,
+        shared_staked_nodes_overrides: Arc<RwLock<AHashMap<Pubkey, u64>>>,
         banking_tracer: Arc<BankingTracer>,
         tracer_thread_hdl: TracerThread,
         tpu_enable_udp: bool,

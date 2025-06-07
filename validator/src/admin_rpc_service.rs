@@ -35,6 +35,7 @@ use {
         time::{Duration, SystemTime},
     },
     tokio::runtime::Runtime,
+    ahash::AHashMap,
 };
 
 #[derive(Clone)]
@@ -45,7 +46,7 @@ pub struct AdminRpcRequestMetadata {
     pub validator_exit: Arc<RwLock<Exit>>,
     pub authorized_voter_keypairs: Arc<RwLock<Vec<Arc<Keypair>>>>,
     pub tower_storage: Arc<dyn TowerStorage>,
-    pub staked_nodes_overrides: Arc<RwLock<HashMap<Pubkey, u64>>>,
+    pub staked_nodes_overrides: Arc<RwLock<AHashMap<Pubkey, u64>>>,
     pub post_init: Arc<RwLock<Option<AdminRpcRequestMetadataPostInit>>>,
     pub rpc_to_plugin_manager_sender: Option<Sender<GeyserPluginManagerRequest>>,
 }
@@ -831,15 +832,15 @@ pub fn runtime() -> Runtime {
 #[derive(Default, Deserialize, Clone)]
 pub struct StakedNodesOverrides {
     #[serde(deserialize_with = "deserialize_pubkey_map")]
-    pub staked_map_id: HashMap<Pubkey, u64>,
+    pub staked_map_id: AHashMap<Pubkey, u64>,
 }
 
-pub fn deserialize_pubkey_map<'de, D>(des: D) -> std::result::Result<HashMap<Pubkey, u64>, D::Error>
+pub fn deserialize_pubkey_map<'de, D>(des: D) -> std::result::Result<AHashMap<Pubkey, u64>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let container: HashMap<String, u64> = serde::Deserialize::deserialize(des)?;
-    let mut container_typed: HashMap<Pubkey, u64> = HashMap::new();
+    let container: AHashMap<String, u64> = serde::Deserialize::deserialize(des)?;
+    let mut container_typed: AHashMap<Pubkey, u64> = AHashMap::new();
     for (key, value) in container.iter() {
         let typed_key = Pubkey::try_from(key.as_str())
             .map_err(|_| serde::de::Error::invalid_type(serde::de::Unexpected::Map, &"PubKey"))?;
@@ -950,7 +951,7 @@ mod tests {
                         solana_core::cluster_slots_service::cluster_slots::ClusterSlots::default(),
                     ),
                 }))),
-                staked_nodes_overrides: Arc::new(RwLock::new(HashMap::new())),
+                staked_nodes_overrides: Arc::new(RwLock::new(AHashMap::new())),
                 rpc_to_plugin_manager_sender: None,
             };
             let mut io = MetaIoHandler::default();
